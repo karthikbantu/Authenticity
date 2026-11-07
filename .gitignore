@@ -1,0 +1,21 @@
+# Environments
+.env
+.env.*
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Vercel
+.vercel
+

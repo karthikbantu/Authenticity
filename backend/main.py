@@ -1,16 +1,16 @@
 import os
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import HttpUrl, BaseModel
+from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
+# Load local .env (if present)
+load_dotenv()
 
 app = FastAPI()
 
-load_dotenv()
-
+# Allow requests from your React frontend (Vercel domain or localhost)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,36 +19,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class UrlRequest(BaseModel):
+    url: str
+
+def get_gemini_client():
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY environment variable is missing. Please set it in Vercel Project Settings.")
+    return genai.Client(api_key=api_key)
+
 @app.get('/')
 def get_mssg():
     return {
-        "Hello Karthik"
+        "message": "Hello from Document Processor Backend on Vercel"
     }
 
 @app.get('/this')
 def execute():
-    return{
+    return {
         "Message": "Hello this is this"
     }
 
-class UrlRequest(BaseModel):
-    url: str
-
-client = genai.Client()
-
-
 @app.post('/search')
 def search_urls(playload: UrlRequest):
-    prompt = f"Analyze this URL for security, pishing, or malware risks: {playload.url}. Is it safe? Answer with only one word: 'safe' or 'high'."
+    client = get_gemini_client()
+
+    prompt = (
+        f"Analyze this URL for security, phishing, or malware risks: {playload.url}. "
+        f"Is it safe? Answer with only one word: 'safe' or 'high'."
+    )
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.8-flash",
         contents=prompt
     )
 
-    verdict = response.text.strip().lower()k
+    verdict = response.text.strip().lower()
 
     return {
-        "threatlevel":"safe" if "safe" in verdict else "high"
+        "threatlevel": "safe" if "safe" in verdict else "high"
     }
-
