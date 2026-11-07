@@ -5,7 +5,7 @@ import type { UrlCheckResult } from '../types/urlCheck';
  * You can also set VITE_API_URL in a .env file:
  * VITE_API_URL=http://localhost:8000/check-url
  */
-export const API_ENDPOINT = import.meta.env.VITE_API_URL || 'http://localhost:8000/search';
+export const API_ENDPOINT = import.meta.env.VITE_API_URL || 'https://authenticity-5knt.vercel.app/search';
 
 /**
  * Sends a POST request to your backend to check if the URL is secure or insecure.
