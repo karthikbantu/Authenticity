@@ -1,0 +1,123 @@
+.app-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at top, #131d31 0%, #0b0f19 70%);
+  overflow-x: hidden;
+}
+
+/* Ambient glow spheres */
+.glow-sphere {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-sphere-top {
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 380px;
+  background: rgba(2, 132, 199, 0.18);
+}
+
+.glow-sphere-bottom {
+  bottom: 0;
+  right: 10%;
+  width: 450px;
+  height: 350px;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 4rem;
+}
+
+.result-section {
+  width: 100%;
+  padding: 0 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Backend integration quick guide */
+.integration-guide-box {
+  width: 100%;
+  max-width: 760px;
+  margin: 3rem auto 0;
+  padding: 0 1rem;
+}
+
+.toggle-guide-btn {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px dashed rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.toggle-guide-btn:hover {
+  background: rgba(51, 65, 85, 0.6);
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.guide-content {
+  margin-top: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  animation: fadeIn 0.2s ease;
+}
+
+.guide-desc {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.guide-desc code {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.code-block {
+  background: #090d16;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  color: #a5f3fc;
+  line-height: 1.5;
+}
+
+.app-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+}

@@ -1,0 +1,122 @@
+.recent-checks-wrapper {
+  width: 100%;
+  max-width: 760px;
+  margin: 2rem auto 0;
+  padding: 0 1rem;
+}
+
+.recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.recent-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.clear-history-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.clear-history-btn:hover {
+  color: #f43f5e;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.recent-item:hover {
+  background: rgba(51, 65, 85, 0.6);
+  border-color: rgba(148, 163, 184, 0.25);
+  transform: translateX(3px);
+}
+
+.recent-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.item-secure .recent-item-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.item-insecure .recent-item-icon {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+}
+
+.recent-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.recent-item-url {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-item-time {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.recent-status-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.badge-safe {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.badge-danger {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fb7185;
+}
+
