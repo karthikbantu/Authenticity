@@ -1,12 +1,15 @@
 import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
-# Load local .env (if present)
-load_dotenv()
+# Load .env file reliably from the same directory as main.py
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
+load_dotenv() # Also fallback to current working directory
 
 app = FastAPI()
 
@@ -37,30 +40,36 @@ def execute():
 
 @app.post('/search')
 def search_urls(playload: UrlRequest):
-    api_key = os.getenv("GEMINI_API_KEY")
+    try:
+        api_key = os.getenv("GEMINI_API_KEY")
 
-    if api_key:
-        try:
-            client = genai.Client(api_key=api_key)
-            prompt = (
-                f"Analyze this URL for security, phishing, or malware risks: {playload.url}. "
-                f"Is it safe? Answer with only one word: 'safe' or 'high'."
-            )
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-            verdict = response.text.strip().lower()
-            return {
-                "threatlevel": "safe" if "safe" in verdict else "high"
-            }
-        except Exception as e:
-            print("Gemini API call failed:", e)
+        if api_key:
+            try:
+                client = genai.Client(api_key=api_key)
+                prompt = (
+                    f"Analyze this URL for security, phishing, or malware risks: {playload.url}. "
+                    f"Is it safe? Answer with only one word: 'safe' or 'high'."
+                )
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                verdict = response.text.strip().lower()
+                return {
+                    "threatlevel": "safe" if "safe" in verdict else "high"
+                }
+            except Exception as e:
+                print("Gemini API call failed:", e)
 
-    # Graceful fallback if GEMINI_API_KEY is not set or network failed
-    is_safe = playload.url.startswith("https://") and not any(
-        ext in playload.url.lower() for ext in [".exe", "phishing", "malware", ".xyz", ".top"]
-    )
-    return {
-        "threatlevel": "safe" if is_safe else "high"
-    }
+        # Fallback check if GEMINI_API_KEY is not set or network failed
+        is_safe = playload.url.startswith("https://") and not any(
+            ext in playload.url.lower() for ext in [".exe", "phishing", "malware", ".xyz", ".top"]
+        )
+        return {
+            "threatlevel": "safe" if is_safe else "high"
+        }
+    except Exception as err:
+        print("Fatal error in search_urls:", err)
+        return {
+            "threatlevel": "safe" if playload.url.startswith("https://") else "high"
+        }
