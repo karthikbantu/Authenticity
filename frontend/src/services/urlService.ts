@@ -1,26 +1,52 @@
 import type { UrlCheckResult } from '../types/urlCheck';
 
 /**
- * Configure your backend endpoint URL here.
- * You can also set VITE_API_URL in a .env file:
- * VITE_API_URL=http://localhost:8000/check-url
+ * Endpoint configuration:
+ * - On Vercel (https://authenticity-sage.vercel.app):
+ *   Uses '/search'. Vercel's vercel.json rewrites this to AWS EC2 (http://56.228.97.157:8000/search)
+ *   so the browser only speaks HTTPS and avoids Mixed Content errors.
+ * - On Localhost (http://localhost:5173):
+ *   Tries local backend, with fallback to AWS EC2 (http://56.228.97.157:8000/search).
  */
-export const API_ENDPOINT = import.meta.env.VITE_API_URL || 'https://authenticity-5knt.vercel.app/search';
+export const API_ENDPOINT = import.meta.env.VITE_API_URL || '/search';
+export const EC2_BACKEND_URL = 'http://56.228.97.157:8000/search';
 
 /**
- * Sends a POST request to your backend to check if the URL is secure or insecure.
+ * Sends a POST request to check if the URL is secure or insecure.
  */
 export async function checkUrlWithBackend(url: string): Promise<UrlCheckResult> {
   const startTime = performance.now();
 
   try {
-    const response = await fetch(API_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url }),
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!response.ok && typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        throw new Error(`Local endpoint returned status ${response.status}`);
+      }
+    } catch (primaryError) {
+      // If testing on localhost (HTTP) and primary endpoint is unreachable, try EC2 directly:
+      if (typeof window !== 'undefined' && window.location.protocol === 'http:' && window.location.hostname === 'localhost') {
+        console.info('[UrlService] Local endpoint unreachable, attempting AWS EC2 direct fallback...');
+        response = await fetch(EC2_BACKEND_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url }),
+        });
+      } else {
+        throw primaryError;
+      }
+    }
 
     if (!response.ok) {
       throw new Error(`Server returned status ${response.status}: ${response.statusText}`);
@@ -29,7 +55,7 @@ export async function checkUrlWithBackend(url: string): Promise<UrlCheckResult> 
     const data = await response.json();
     const duration = Math.round(performance.now() - startTime);
 
-    // Read the exact "threatlevel" returned from your FastAPI backend
+    // Read "threatlevel" returned from your FastAPI backend
     const rawThreat = data.threatlevel || data.threatLevel || (data.isSecure ? 'safe' : 'high') || 'safe';
     const isSecure = String(rawThreat).toLowerCase() === 'safe';
     const threatLevel = isSecure ? 'safe' : 'high';
@@ -55,8 +81,6 @@ export async function checkUrlWithBackend(url: string): Promise<UrlCheckResult> 
       backendSource: 'live-api',
     };
   } catch (error) {
-    // If backend is not running yet, provide a simulated preview response
-    // so the frontend is testable immediately.
     console.warn('[UrlService] Backend not reachable or error occurred. Falling back to preview mode:', error);
     return simulateCheck(url, Math.round(performance.now() - startTime));
   }
@@ -99,13 +123,13 @@ function simulateCheck(url: string, duration: number): UrlCheckResult {
   const hostname = extractHostname(url);
   const protocol = extractProtocol(url);
 
-  // Simple heuristic simulation for testing before backend is linked
   const isSuspicious = 
     lower.includes('phishing') || 
     lower.includes('malware') || 
     lower.includes('free-gift') ||
     lower.includes('verify-login') ||
     lower.includes('suspicious') ||
+    lower.includes('.exe') ||
     lower.endsWith('.xyz') ||
     lower.endsWith('.top') ||
     (!isHttps && !lower.includes('localhost'));

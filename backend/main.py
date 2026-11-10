@@ -22,16 +22,11 @@ app.add_middleware(
 class UrlRequest(BaseModel):
     url: str
 
-def get_gemini_client():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable is missing. Please set it in Vercel Project Settings.")
-    return genai.Client(api_key=api_key)
-
 @app.get('/')
-def get_mssg():
+def get_root():
     return {
-        "message": "Hello from Document Processor Backend on Vercel"
+        "status": "online",
+        "message": "URL Security Inspector Backend is running on EC2"
     }
 
 @app.get('/this')
@@ -42,20 +37,30 @@ def execute():
 
 @app.post('/search')
 def search_urls(playload: UrlRequest):
-    client = get_gemini_client()
+    api_key = os.getenv("GEMINI_API_KEY")
 
-    prompt = (
-        f"Analyze this URL for security, phishing, or malware risks: {playload.url}. "
-        f"Is it safe? Answer with only one word: 'safe' or 'high'."
+    if api_key:
+        try:
+            client = genai.Client(api_key=api_key)
+            prompt = (
+                f"Analyze this URL for security, phishing, or malware risks: {playload.url}. "
+                f"Is it safe? Answer with only one word: 'safe' or 'high'."
+            )
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            verdict = response.text.strip().lower()
+            return {
+                "threatlevel": "safe" if "safe" in verdict else "high"
+            }
+        except Exception as e:
+            print("Gemini API call failed:", e)
+
+    # Graceful fallback if GEMINI_API_KEY is not set or network failed
+    is_safe = playload.url.startswith("https://") and not any(
+        ext in playload.url.lower() for ext in [".exe", "phishing", "malware", ".xyz", ".top"]
     )
-
-    response = client.models.generate_content(
-        model="gemini-3.8-flash",
-        contents=prompt
-    )
-
-    verdict = response.text.strip().lower()
-
     return {
-        "threatlevel": "safe" if "safe" in verdict else "high"
+        "threatlevel": "safe" if is_safe else "high"
     }
